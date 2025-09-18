@@ -1,7 +1,7 @@
 # Projeto 1 – Problema da Mochila 0/1
 ## 📌 Introdução
 
-O projeto consiste em resolver o Problema da Mochila 0/1 por 3 abordagens clássicas diferentes, derivar suas equações de recorrência (se aplicável) e, em seguida, realizar a análise da complexidade e análise empírica dos algorítimos.
+O projeto consiste em resolver o Problema da Mochila 0/1 por 3 abordagens clássicas diferentes, derivar suas equações de recorrência (se aplicável) e, em seguida, realizar a análise da complexidade e análise empírica dos algoritimos.
 
 ## 🎯 Objetivo
 
@@ -11,7 +11,7 @@ O projeto consiste em resolver o Problema da Mochila 0/1 por 3 abordagens cláss
 - Algoritimo Guloso.
 - Programação Dinâmica.
 
-**Analisar a complexidade dos algorítimos:**
+**Analisar a complexidade dos algoritimos:**
 
 - Teoricamente.
 - Empiricamente.
