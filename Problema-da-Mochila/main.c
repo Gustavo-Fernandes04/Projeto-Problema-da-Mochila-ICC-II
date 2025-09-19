@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include "item.h"
 
-ITEM *algoritmo_guloso(ITEM *itens, MOCHILA *mochila);
-
 int main(){
     int n;
     int pesoMochila;
 
-    printf("Digite o número de intens: ");
+    printf("Digite o número de itens: ");
     scanf("%d", &n);
     printf("\n");
 
@@ -26,9 +24,8 @@ int main(){
         int pesoTemp;
         int valorTemp;
         scanf("%d %d", &pesoTemp, &valorTemp);
-        // Precisa fazer uma função no TAD item para criar item
-        // ITEM *it = item_criar(pesoTemp, valorTemp);
-        // itens[i] = it;
+        ITEM *it = item_criar(pesoTemp, valorTemp);
+        itens[i] = it;
     }
 
     int comando;
@@ -60,11 +57,3 @@ int main(){
     return 0;
 }
 
-
-
-
-
-ITEM *algoritmo_guloso(ITEM *itens, MOCHILA *mochila)
-{
-
-}
