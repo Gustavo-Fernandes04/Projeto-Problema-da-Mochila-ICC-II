@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include "item.h"
 
+typedef struct{
+    float pesoMax;
+    float valor;
+    float peso;
+    ITEM *itensArmazenados;
+}MOCHILA;
+
 int main(){
     int n;
     int pesoMochila;
