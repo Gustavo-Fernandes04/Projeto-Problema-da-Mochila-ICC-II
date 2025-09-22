@@ -16,7 +16,7 @@ float get_peso(ITEM* item)
     return (item->pesoItem);
 }
 
-bool item_apagar(ITEM **item)
+bool item_apagar(ITEM** item)
 {
     if (*item == NULL)
     {
