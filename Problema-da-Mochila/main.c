@@ -25,6 +25,8 @@ int main(){
     printf("Digite o peso máximo da mochila: ");
     scanf("%d", &pesoMochila);
     printf("\n");
+    MOCHILA mochila; //criei a mochila
+    mochila.pesoMax = pesoMochila;
 
     printf("Digite os itens (peso | valor):\n");
     for (int i = 0; i < n; i++){
@@ -32,7 +34,7 @@ int main(){
         int valorTemp;
         scanf("%d %d", &pesoTemp, &valorTemp);
         ITEM *it = item_criar(pesoTemp, valorTemp);
-        itens[i] = it;
+        itens[i] = it; //itens[] é um vetor de ITEM* 
     }
 
     int comando;
@@ -63,8 +65,27 @@ int main(){
 
     return 0;
 }
-
-int guloso()
+/*
+No guloso eu vou pegar os itens armazenados no vetor
+e criar um vetor paralelo com a razão valor/peso
+vou loopar pelo vetor procurando o maior e vou adicionando
+enquanto isso vou verificando se passa do peso maximo usando um acumulador do peso e comparando com o pesomax
+*/
+ITEM **guloso(ITEM **itens, MOCHILA mochila, int n) 
 {
-    
+    float razoes[n];
+    for (int i = 0; i < n; i++) //loop que cria o vetor paralelo de razoes
+    {
+        float valor = get_valor(itens[i]);
+        float peso = get_peso(itens[i]);
+        razoes[i] = valor / peso;
+    }
+    float pesoAcumulado; //vai somando o peso adicionado
+    int mochilaCheia = 0; //booleano que indica se ainda é possivel encher a mochila ou nao
+    do //loop que percorre o vetor procurando a maior razao
+    {
+        /* tenho que pensar em como remover do vetor os itens usados, acho que é mais facil fazer uma struct com item, razao e numero
+        fazendo isso um vetor ordenado pelas razoes e ai ir pegando pela ordem*/
+        
+    } while (!mochilaCheia);
 }
