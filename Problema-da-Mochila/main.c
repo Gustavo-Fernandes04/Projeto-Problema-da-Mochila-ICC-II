@@ -1,22 +1,27 @@
 #include <stdio.h>
 #include "item.h"
 
+MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens);
+
+float maior (float a, float b);
+
 typedef struct{
-    float pesoMax;
+    int pesoMax;
     float valor;
-    float peso;
-    ITEM *itensArmazenados;
+    int peso;
+    int nItensArmazenados;
+    ITEM **itensArmazenados;
 }MOCHILA;
 
 int main(){
-    int n;
+    int nItens;
     int pesoMochila;
 
     printf("Digite o número de itens: ");
-    scanf("%d", &n);
+    scanf("%d", &nItens);
     printf("\n");
 
-    ITEM **itens = (ITEM**)malloc(sizeof(ITEM*) * n);
+    ITEM **itens = (ITEM**)malloc(sizeof(ITEM*) * nItens);
     if (itens == NULL){
         printf("Falha ao alocar memória para o vetor de itens\n");
         return 1;
@@ -29,7 +34,7 @@ int main(){
     mochila.pesoMax = pesoMochila;
 
     printf("Digite os itens (peso | valor):\n");
-    for (int i = 0; i < n; i++){
+    for (int i = 0; i < nItens; i++){
         int pesoTemp;
         int valorTemp;
         scanf("%d %d", &pesoTemp, &valorTemp);
@@ -58,13 +63,24 @@ int main(){
     }
 
     // Precisa de uma função no TAD item para apagar o item
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < nItens; i++) {
         item_apagar(&itens[i]); 
     }
     free(itens);
 
     return 0;
 }
+
+// Função auxiliar para calcular o maior entre 2 números
+float maior(float a, float b){
+    if (a > b){
+        return a;
+    }
+    else{
+        return b;
+    }
+}
+
 /*
 No guloso eu vou pegar os itens armazenados no vetor
 e criar um vetor paralelo com a razão valor/peso
@@ -88,4 +104,110 @@ ITEM **guloso(ITEM **itens, MOCHILA mochila, int n)
         fazendo isso um vetor ordenado pelas razoes e ai ir pegando pela ordem*/
         
     } while (!mochilaCheia);
+}
+
+MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens){
+    // Criação da tabela da programação dinâmica
+    float **dp = (float **)malloc((nItens + 1) * sizeof(float *));
+    if (dp == NULL){
+        return NULL;
+    }
+    for (int i = 0; i <= nItens; i++){
+        dp[i] = (float *)malloc((pesoMax + 1) * sizeof(float));
+        if (dp[i] == NULL) {
+            while(--i >= 0) free(dp[i]);
+            free(dp);
+            return NULL;
+        }
+    }
+
+    // Preenchimento da tabela da dp
+    for (int i = 0; i <= nItens; i++){
+        for (int j = 0; j <= pesoMax; j++){
+            // Sub-problema base (mochila com capacidade nula ou quantidade nula de itens)
+            if (i == 0 || j == 0){
+                dp[i][j] = 0;
+            }
+            else if(get_peso(itens[i-1]) <= j){
+                 /*Se o item atual tem o peso menor ou igual ao da mochila do sub-problema, temos a opção de incluir o item ou não, tudo depende se o valor total ao incluir ele é maior ou menor do que a solução anterior (sem incluir) */ 
+                float valorPegar = get_valor(itens[i-1]) + dp[i-1][j - get_peso(itens[i-1])];
+                float valorNPegar = dp[i-1][j];
+                dp[i][j] = maior(valorPegar, valorNPegar);
+            }
+            else{
+                // Se o item atual não pode ser inserido, o melhor resultado é o anterior
+                dp[i][j] = dp[i-1][j];
+            }
+        }
+    }
+
+    // Obtendo os itens da melhor solução e o peso dela
+    float valorDaSolucao = dp[nItens][pesoMax];
+    int pesoTotal = 0;
+    int cap = pesoMax;
+
+    // Contar quantos itens fazem parte da solução ótima.
+    int nItensSolucao = 0;
+    for (int i = nItens; i > 0 && cap > 0; i--){
+        if (dp[i][cap] != dp[i-1][cap]){
+            nItensSolucao++;
+            cap -= get_peso(itens[i-1]);
+        }
+    }
+
+    // Criando a mochila da melhor solução
+    MOCHILA *melhorMochila = (MOCHILA*) malloc(sizeof(MOCHILA));
+    if (melhorMochila == NULL){
+        printf("Erro ao alocar memoria para a melhor mochila (DP)\n");
+        for (int i = 0; i <= nItens; i++){
+            free(dp[i]);
+        }
+        free(dp);
+        return NULL;
+    }
+
+    // Criando o array de itens da solução
+    melhorMochila->itensArmazenados = (ITEM**) malloc(nItensSolucao * sizeof(ITEM*)); 
+    if (melhorMochila->itensArmazenados == NULL){
+        printf("Erro ao alocar memória para o array de itens da melhor mochila (DP)\n");
+        for (int i = 0; i <= nItens; i++){
+            free(dp[i]);
+        }
+        free(dp);
+        free(melhorMochila);
+        return NULL;
+    }
+
+    // Preenchendo a melhor mochila
+    melhorMochila->pesoMax = pesoMax;
+    melhorMochila->valor = valorDaSolucao;
+
+    // Encontrando os itens da melhor mochila e preenchendo o array interno
+    cap = pesoMax;
+    int k = 0; // Índice para o array 'itensArmazenados'
+    int pesoTotal = 0; // Inicializa o acumulador de peso
+
+    for (int i = nItens; i > 0 && cap > 0; i--){
+        // Se o valor na célula atual é diferente da célula de cima, significa que a inclusão do item foi feita e ele faz parte da melhor solução
+        if (dp[i][cap] != dp[i-1][cap]){
+            // Adição do item e seu peso
+            melhorMochila->itensArmazenados[k] = itens[i-1];
+            pesoTotal += get_peso(itens[i-1]);
+            
+            cap -= get_peso(itens[i-1]);
+            k++;
+        }
+    }
+    
+    // Atribui o peso total e o número de itens armazenados na melhor mochila
+    melhorMochila->peso = pesoTotal;
+    melhorMochila->nItensArmazenados = nItensSolucao;
+
+    // Liberar a memória da tabela DP
+    for (int i = 0; i <= nItens; i++) {
+        free(dp[i]);
+    }
+    free(dp);
+
+    return melhorMochila;
 }

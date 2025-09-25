@@ -11,7 +11,7 @@ float get_valor(ITEM* item)
     return (item->valorItem);
 }
 
-float get_peso(ITEM* item)
+int get_peso(ITEM* item)
 {
     return (item->pesoItem);
 }
