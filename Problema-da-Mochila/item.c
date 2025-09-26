@@ -4,11 +4,17 @@ typedef struct item_
 {
     float pesoItem;
     float valorItem;
+    int id;
 }ITEM;
 
 float get_valor(ITEM* item)
 {
     return (item->valorItem);
+}
+
+int get_id(ITEM* item)
+{
+    return (item->id);
 }
 
 int get_peso(ITEM* item)
@@ -31,7 +37,7 @@ bool item_apagar(ITEM** item)
     
 }
 
-ITEM *item_criar(float peso, float valor)
+ITEM *item_criar(float peso, float valor, int id)
 {
     ITEM *item = (ITEM *) malloc (sizeof(ITEM *));
     if (item == NULL)
@@ -40,5 +46,6 @@ ITEM *item_criar(float peso, float valor)
     }
     item->pesoItem = peso;
     item->valorItem = valor;
+    item->id = id;
     return (item);
 }

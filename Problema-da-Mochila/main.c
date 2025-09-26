@@ -13,6 +13,12 @@ typedef struct{
     ITEM **itensArmazenados;
 }MOCHILA;
 
+//struct vai armazenar um item, sua razao valor/peso
+typedef struct{
+    ITEM* item;
+    float razao;
+}NOGULOSO;
+
 int main(){
     int nItens;
     int pesoMochila;
@@ -31,14 +37,19 @@ int main(){
     scanf("%d", &pesoMochila);
     printf("\n");
     MOCHILA mochila; //criei a mochila
+    //setando a mochila vazia
     mochila.pesoMax = pesoMochila;
+    mochila.valor = 0;
+    mochila.peso = 0;
+    mochila.nItensArmazenados = 0;
+    mochila.itensArmazenados = NULL;
 
-    printf("Digite os itens (peso | valor):\n");
+    printf("Digite os itens (peso, valor):\n");
     for (int i = 0; i < nItens; i++){
         int pesoTemp;
         int valorTemp;
-        scanf("%d %d", &pesoTemp, &valorTemp);
-        ITEM *it = item_criar(pesoTemp, valorTemp);
+        scanf("%d, %d", &pesoTemp, &valorTemp);
+        ITEM *it = item_criar(pesoTemp, valorTemp, i + 1);
         itens[i] = it; //itens[] é um vetor de ITEM* 
     }
 
@@ -80,6 +91,33 @@ float maior(float a, float b){
         return b;
     }
 }
+//algoritmo para ordenar o vetor noguloso com base nas razoes valor/peso
+void quicksort(NOGULOSO *noguloso, int inf, int sup)
+{
+    int aux;
+    int meio = (inf + sup) / 2;
+    float pivo = noguloso[meio].razao;
+    int i = inf;
+    int j = sup;
+    do{
+        while(noguloso[i].razao < pivo)
+        {
+            i++;
+        }
+        while(noguloso[j].razao > pivo)
+        {
+            j--;
+        }
+        if (i <= j)
+        {
+            aux = noguloso[i].razao;
+            noguloso[i].razao = noguloso[j].razao;
+            noguloso[j].razao = aux;
+            i++;
+            j--;
+        }
+    }while (i < j);
+}
 
 /*
 No guloso eu vou pegar os itens armazenados no vetor
@@ -87,23 +125,42 @@ e criar um vetor paralelo com a razão valor/peso
 vou loopar pelo vetor procurando o maior e vou adicionando
 enquanto isso vou verificando se passa do peso maximo usando um acumulador do peso e comparando com o pesomax
 */
-ITEM **guloso(ITEM **itens, MOCHILA mochila, int n) 
+MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n) 
 {
-    float razoes[n];
-    for (int i = 0; i < n; i++) //loop que cria o vetor paralelo de razoes
+    NOGULOSO noguloso[n]; //vetor de noguloso
+    for (int i = 0; i < n; i++) //loop que cria o vetor de structs
     {
-        float valor = get_valor(itens[i]);
-        float peso = get_peso(itens[i]);
-        razoes[i] = valor / peso;
+        //bota os itens dentro dos nos e no vetor
+        noguloso[i].item = itens[i];
+        noguloso[i].razao = get_valor(itens[i]) / get_peso(itens[i]);
     }
-    float pesoAcumulado; //vai somando o peso adicionado
+    /*ALGORITMO DE ORDENAÇÃO MOMENT*/
+    int infInicial = 0;
+    int supInicial = n - 1;
+    void quicksort(noguloso, infInicial, supInicial);
     int mochilaCheia = 0; //booleano que indica se ainda é possivel encher a mochila ou nao
+    int i = 0;
     do //loop que percorre o vetor procurando a maior razao
     {
-        /* tenho que pensar em como remover do vetor os itens usados, acho que é mais facil fazer uma struct com item, razao e numero
-        fazendo isso um vetor ordenado pelas razoes e ai ir pegando pela ordem*/
-        
+        /*nItensArmazenados é usado como indíce pois a quantidade de itens na mochila
+        sempre sera igual ao index do item que estará sendo operado no momento*/
+        if (mochila->pesoMax > mochila->peso + get_peso(noguloso[mochila->nItensArmazenados].item)) //verifica se o peso estoura o pesomax da mochila antes de adicionar o item
+        {
+            mochila->itensArmazenados[mochila->nItensArmazenados] = noguloso[mochila->nItensArmazenados].item; //armazena o item na mochila
+            mochila->valor+= get_valor(noguloso[mochila->nItensArmazenados].item); //vai somando o valor total da mochila
+            mochila->peso+= get_peso(noguloso[mochila->nItensArmazenados].item); //vai somando o peso total da mochila
+        }
+        if (mochila->nItensArmazenados < n - 1) //enquanto o vetor de itens nao acabar
+        {
+            mochila->nItensArmazenados += 1; //contador de itens dentro da mochila
+        }
+        else //nesse caso, passou por todos os itens e a mochila esta cheia
+        {
+            mochilaCheia = 1;
+        }
+
     } while (!mochilaCheia);
+    return mochila;
 }
 
 MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens){
