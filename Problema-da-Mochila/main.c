@@ -121,6 +121,11 @@ void quicksort(NOGULOSO *noguloso, int inf, int sup)
     }while (i < j);
 }
 
+MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n)
+{
+    
+}
+
 MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n) 
 {
     NOGULOSO noguloso[n];
