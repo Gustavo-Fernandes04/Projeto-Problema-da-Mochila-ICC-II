@@ -3,6 +3,7 @@
 
 MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens);
 MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n);
+MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem);
 void quicksort(NOGULOSO *noguloso, int inf, int sup);
 float maior (float a, float b);
 
@@ -121,9 +122,21 @@ void quicksort(NOGULOSO *noguloso, int inf, int sup)
     }while (i < j);
 }
 
-MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n)
+MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem) //no inicio, IndexItem vai ser o item inicial (vai valer 0)
 {
-    
+    MOCHILA *mochilaMelhor;
+    if(mochila->pesoMax >= mochila->peso + get_peso(itens[indexItem]) && indexItem >= n )
+    {
+        mochilaMelhor->itensArmazenados[indexItem] = itens[indexItem];
+        mochilaMelhor->valor = mochila->valor + get_valor(itens[indexItem]);
+        mochilaMelhor->peso = mochila->peso + get_peso(itens[indexItem]);
+        mochilaMelhor->nItensArmazenados = mochila->nItensArmazenados + 1;
+    }
+    else
+    {
+        mochilaMelhor = mochila;
+    }
+   //criar funcao da recursao que retorna void
 }
 
 MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n) 
