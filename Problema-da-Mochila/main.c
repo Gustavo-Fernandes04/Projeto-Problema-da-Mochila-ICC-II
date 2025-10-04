@@ -2,14 +2,7 @@
 #include <time.h>
 #include "item.h"
 
-MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens);
-MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n);
-MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem);
-void bruteforce_recursao(MOCHILA *mochilaAtual, MOCHILA *mochilaMelhor, int indexItem, ITEM **itens, int n);
-void quicksort(NOGULOSO *noguloso, int inf, int sup);
-float maior (float a, float b);
-
-typedef struct{
+typedef struct mochila_{
     int pesoMax;
     float valor;
     int peso;
@@ -18,10 +11,17 @@ typedef struct{
 }MOCHILA;
 
 //struct vai armazenar um item, sua razao valor/peso
-typedef struct{
+typedef struct noguloso_ {
     ITEM* item;
     float razao;
 }NOGULOSO;
+
+MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens);
+MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n);
+MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem);
+void bruteforce_recursao(MOCHILA *mochilaAtual, MOCHILA *mochilaMelhor, int indexItem, ITEM **itens, int n);
+void quicksort(NOGULOSO *noguloso, int inf, int sup);
+float maior (float a, float b);
 
 int main(){
     int nItens;
@@ -40,13 +40,13 @@ int main(){
     printf("Digite o peso máximo da mochila: ");
     scanf("%d", &pesoMochila);
     printf("\n");
-    MOCHILA mochila; //criei a mochila
+    MOCHILA *mochila = (MOCHILA*)malloc(sizeof(MOCHILA)); //criei a mochila
     //setando a mochila vazia
-    mochila.pesoMax = pesoMochila;
-    mochila.valor = 0;
-    mochila.peso = 0;
-    mochila.nItensArmazenados = 0;
-    mochila.itensArmazenados = NULL;
+    mochila->pesoMax = pesoMochila;
+    mochila->valor = 0;
+    mochila->peso = 0;
+    mochila->nItensArmazenados = 0;
+    mochila->itensArmazenados = NULL;
 
     printf("Digite os itens (peso, valor):\n");
     for (int i = 0; i < nItens; i++){
@@ -78,14 +78,14 @@ int main(){
         }
         case 3:
         {
-            mochila = programacao_dinamica(itens, mochila.pesoMax, nItens);
+            mochila = programacao_dinamica(itens, mochila->pesoMax, nItens);
             break;
         }
     }
     printf("Os itens que devem ser armazenados na mochila são:\n");
-    for (int i = 0; i < mochila.nItensArmazenados; i++)
+    for (int i = 0; i < mochila->nItensArmazenados; i++)
     {
-        printf("Item \"%d\", de peso %d e valor %f\n", get_id(mochila.itensArmazenados[i]), get_peso(mochila.itensArmazenados[i]), get_valor(mochila.itensArmazenados[i]));
+        printf("Item \"%d\", de peso %d e valor %f\n", get_id(mochila->itensArmazenados[i]), get_peso(mochila->itensArmazenados[i]), get_valor(mochila->itensArmazenados[i]));
     }
 
     // Precisa de uma função no TAD item para apagar o item
@@ -93,7 +93,8 @@ int main(){
         item_apagar(&itens[i]); 
     }
     free(itens);
-
+    free(mochila);
+    mochila = NULL;
     return 0;
 }
 
@@ -140,7 +141,7 @@ MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem) //no 
     clock_t inicio, fim; //marca de tempo
     double tempoExec; //marca o tempo de execução
     inicio = clock();
-    MOCHILA *mochilaMelhor;
+    MOCHILA *mochilaMelhor = (MOCHILA *)malloc(sizeof(MOCHILA));
     mochilaMelhor->valor = 0;
     mochilaMelhor->peso = 0;
     mochilaMelhor->nItensArmazenados = 0;
@@ -149,6 +150,8 @@ MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem) //no 
     fim = clock();
     tempoExec = ((double)(fim - inicio)/CLOCKS_PER_SEC);
     printf("Tempo de execucao: %lf",tempoExec);
+    free(mochilaMelhor);
+    mochilaMelhor = NULL;
     return mochilaMelhor;
 }
 
@@ -165,11 +168,11 @@ void bruteforce_recursao(MOCHILA *mochilaAtual, MOCHILA *mochilaMelhor, int inde
     if ((indexItem + 1 < n))
     {
         bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem + 1, itens, n);
-        if (mochilaAtual->peso + get_peso(itens[indexItem + 1] <= mochilaMelhor->pesoMax))
+        if ((mochilaAtual->peso + get_peso(itens[indexItem + 1]) <= mochilaMelhor->pesoMax))
         {
             mochilaAtual->itensArmazenados[mochilaAtual->nItensArmazenados + 1] = itens[indexItem];
-            mochilaAtual->valor + get_valor(itens[indexItem]);
-            mochilaAtual->peso + get_peso(itens[indexItem]);
+            mochilaAtual->valor += get_valor(itens[indexItem]);
+            mochilaAtual->peso += get_peso(itens[indexItem]);
             bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem + 1, itens, n);
         } 
     }
@@ -191,7 +194,7 @@ MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n)
     /*ALGORITMO DE ORDENAÇÃO MOMENT*/
     int infInicial = 0;
     int supInicial = n - 1;
-    void quicksort(noguloso, infInicial, supInicial);
+    quicksort(noguloso, infInicial, supInicial);
     for (int i = 0; i < n; i++)//loop que percorre o vetor procurando a maior razao
     {
     /*nItensArmazenados é usado como indíce pois a quantidade de itens na mochila
@@ -293,7 +296,7 @@ MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens){
     // Encontrando os itens da melhor mochila e preenchendo o array interno
     cap = pesoMax;
     int k = 0; // Índice para o array 'itensArmazenados'
-    int pesoTotal = 0; // Inicializa o acumulador de peso
+    pesoTotal = 0; // Inicializa o acumulador de peso
 
     for (int i = nItens; i > 0 && cap > 0; i--){
         // Se o valor na célula atual é diferente da célula de cima, significa que a inclusão do item foi feita e ele faz parte da melhor solução
