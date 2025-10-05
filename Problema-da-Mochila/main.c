@@ -51,8 +51,8 @@ int main(){
     printf("Digite os itens (peso, valor):\n");
     for (int i = 0; i < nItens; i++){
         int pesoTemp;
-        int valorTemp;
-        scanf("%d, %d", &pesoTemp, &valorTemp);
+        float valorTemp;
+        scanf("%d %f", &pesoTemp, &valorTemp);
         ITEM *it = item_criar(pesoTemp, valorTemp, i + 1);
         itens[i] = it; //itens[] é um vetor de ITEM* 
     }
@@ -82,10 +82,10 @@ int main(){
             break;
         }
     }
-    printf("Os itens que devem ser armazenados na mochila são:\n");
+    printf("\nOs itens que devem ser armazenados na mochila são:\n");
     for (int i = 0; i < mochila->nItensArmazenados; i++)
     {
-        printf("Item \"%d\", de peso %d e valor %f\n", get_id(mochila->itensArmazenados[i]), get_peso(mochila->itensArmazenados[i]), get_valor(mochila->itensArmazenados[i]));
+        printf("Item \"%d\", de peso %d e valor %.04f\n", get_id(mochila->itensArmazenados[i]), get_peso(mochila->itensArmazenados[i]), get_valor(mochila->itensArmazenados[i]));
     }
 
     // Precisa de uma função no TAD item para apagar o item
@@ -218,6 +218,7 @@ MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens){
     clock_t inicio, fim; //marca de tempo
     double tempoExec; //marca o tempo de execução
     inicio = clock();
+    
     // Criação da tabela da programação dinâmica
     float **dp = (float **)malloc((nItens + 1) * sizeof(float *));
     if (dp == NULL){
