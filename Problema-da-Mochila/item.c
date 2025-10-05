@@ -39,7 +39,7 @@ bool item_apagar(ITEM** item)
 
 ITEM *item_criar(float peso, float valor, int id)
 {
-    ITEM *item = (ITEM *) malloc (sizeof(ITEM *));
+    ITEM *item = (ITEM *) malloc (sizeof(ITEM));
     if (item == NULL)
     {
         return (NULL);

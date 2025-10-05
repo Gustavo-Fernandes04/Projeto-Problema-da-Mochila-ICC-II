@@ -17,8 +17,8 @@ typedef struct noguloso_ {
 }NOGULOSO;
 
 MOCHILA *programacao_dinamica(ITEM **itens, int pesoMax, int nItens);
-MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n);
-MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem);
+MOCHILA *guloso(ITEM **itens, int pesoMax, int n);
+MOCHILA *brute_force(ITEM **itens, int pesoMax, int n, int indexItem);
 void bruteforce_recursao(MOCHILA *mochilaAtual, MOCHILA *mochilaMelhor, int indexItem, ITEM **itens, int n);
 void quicksort(NOGULOSO *noguloso, int inf, int sup);
 float maior (float a, float b);
@@ -40,13 +40,7 @@ int main(){
     printf("Digite o peso máximo da mochila: ");
     scanf("%d", &pesoMochila);
     printf("\n");
-    MOCHILA *mochila = (MOCHILA*)malloc(sizeof(MOCHILA)); //criei a mochila
-    //setando a mochila vazia
-    mochila->pesoMax = pesoMochila;
-    mochila->valor = 0;
-    mochila->peso = 0;
-    mochila->nItensArmazenados = 0;
-    mochila->itensArmazenados = NULL;
+    MOCHILA *mochila = NULL;
 
     printf("Digite os itens (peso valor):\n");
     for (int i = 0; i < nItens; i++){
@@ -68,17 +62,17 @@ int main(){
     {
         case 1: 
         {
-            mochila = brute_force(itens, mochila, nItens, 0);
+            mochila = brute_force(itens, pesoMochila, nItens, 0);
             break;
         }
         case 2:
         {
-            mochila = guloso(itens, mochila, nItens);
+            mochila = guloso(itens, pesoMochila, nItens);
             break;
         }
         case 3:
         {
-            mochila = programacao_dinamica(itens, mochila->pesoMax, nItens);
+            mochila = programacao_dinamica(itens, pesoMochila, nItens);
             break;
         }
     }
@@ -136,20 +130,37 @@ void quicksort(NOGULOSO *noguloso, int inf, int sup)
             j--;
         }
     }while (i < j);
+    //chamadas recursivas
+    if (inf < j) {
+        quicksort(noguloso, inf, j);
+    }
+    if (i < sup) {
+        quicksort(noguloso, i, sup);
+    }
 }
 
-MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem) //no inicio, IndexItem vai ser o item inicial (vai valer 0)
+MOCHILA *brute_force(ITEM **itens, int pesoMax, int n, int indexItem) //no inicio, IndexItem vai ser o item inicial (vai valer 0)
 {
     clock_t inicio, fim; //marca de tempo
     double tempoExec; //marca o tempo de execução
     inicio = clock();
+    //cria mochila que armazenara a melhor mochila ate entao
     MOCHILA *mochilaMelhor = (MOCHILA *)malloc(sizeof(MOCHILA));
     mochilaMelhor->valor = 0;
     mochilaMelhor->peso = 0;
     mochilaMelhor->nItensArmazenados = 0;
-    mochilaMelhor->pesoMax = mochila->pesoMax;
+    mochilaMelhor->pesoMax = pesoMax;
     mochilaMelhor->itensArmazenados = (ITEM**) malloc (sizeof(ITEM*) * n);
-    bruteforce_recursao(mochila, mochilaMelhor, indexItem, itens, n);
+    //cria mochila que sera operada a cada passo
+    MOCHILA *mochilaAtual = (MOCHILA *)malloc(sizeof(MOCHILA));
+    mochilaAtual->pesoMax = pesoMax;
+    mochilaAtual->valor = 0;
+    mochilaAtual->peso = 0;
+    mochilaAtual->nItensArmazenados = 0;
+    mochilaAtual->itensArmazenados = (ITEM**) malloc (sizeof(ITEM*) * n);
+    bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem, itens, n);
+    free(mochilaAtual->itensArmazenados);
+    free(mochilaAtual);
     fim = clock();
     tempoExec = ((double)(fim - inicio)/CLOCKS_PER_SEC);
     printf("Tempo de execucao: %lf",tempoExec);
@@ -186,11 +197,16 @@ void bruteforce_recursao(MOCHILA *mochilaAtual, MOCHILA *mochilaMelhor, int inde
     }
 }  
 
-MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n)
+MOCHILA *guloso(ITEM **itens, int pesoMax, int n)
 {
     clock_t inicio, fim; //marca de tempo
     double tempoExec; //marca o tempo de execução
     inicio = clock();
+    MOCHILA* mochila = (MOCHILA*)malloc (sizeof(MOCHILA));
+    mochila->pesoMax = pesoMax;
+    mochila->valor = 0;
+    mochila->peso = 0;
+    mochila->nItensArmazenados = 0;
     mochila->itensArmazenados = (ITEM**)malloc(sizeof(ITEM*) * n); //aloca meoria temporariamente para operar nos itens armazenados
     if (mochila->itensArmazenados == NULL)
     {
