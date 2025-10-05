@@ -10,7 +10,7 @@ typedef struct mochila_{
     ITEM **itensArmazenados;
 }MOCHILA;
 
-//struct vai armazenar um item, sua razao valor/peso
+//struct vai armazenar um item, sua razao peso/valor
 typedef struct noguloso_ {
     ITEM* item;
     float razao;
@@ -48,7 +48,7 @@ int main(){
     mochila->nItensArmazenados = 0;
     mochila->itensArmazenados = NULL;
 
-    printf("Digite os itens (peso, valor):\n");
+    printf("Digite os itens (peso valor):\n");
     for (int i = 0; i < nItens; i++){
         int pesoTemp;
         float valorTemp;
@@ -92,7 +92,9 @@ int main(){
     for (int i = 0; i < nItens; i++) {
         item_apagar(&itens[i]); 
     }
+    
     free(itens);
+    free(mochila->itensArmazenados);
     free(mochila);
     mochila = NULL;
     return 0;
@@ -108,10 +110,10 @@ float maior(float a, float b){
     }
 }
 
-//algoritmo para ordenar o vetor noguloso com base nas razoes valor/peso
+//algoritmo para ordenar o vetor noguloso de modo decrescente com base nas razoes valor/peso
 void quicksort(NOGULOSO *noguloso, int inf, int sup)
 {
-    int aux;
+    NOGULOSO aux;
     int meio = (inf + sup) / 2;
     float pivo = noguloso[meio].razao;
     int i = inf;
@@ -127,9 +129,9 @@ void quicksort(NOGULOSO *noguloso, int inf, int sup)
         }
         if (i <= j)
         {
-            aux = noguloso[i].razao;
-            noguloso[i].razao = noguloso[j].razao;
-            noguloso[j].razao = aux;
+            aux = noguloso[i];
+            noguloso[i] = noguloso[j];
+            noguloso[j] = aux;
             i++;
             j--;
         }
@@ -146,44 +148,55 @@ MOCHILA *brute_force(ITEM **itens, MOCHILA *mochila, int n, int indexItem) //no 
     mochilaMelhor->peso = 0;
     mochilaMelhor->nItensArmazenados = 0;
     mochilaMelhor->pesoMax = mochila->pesoMax;
+    mochilaMelhor->itensArmazenados = (ITEM**) malloc (sizeof(ITEM*) * n);
     bruteforce_recursao(mochila, mochilaMelhor, indexItem, itens, n);
     fim = clock();
     tempoExec = ((double)(fim - inicio)/CLOCKS_PER_SEC);
     printf("Tempo de execucao: %lf",tempoExec);
-    free(mochilaMelhor);
-    mochilaMelhor = NULL;
     return mochilaMelhor;
 }
 
 void bruteforce_recursao(MOCHILA *mochilaAtual, MOCHILA *mochilaMelhor, int indexItem, ITEM **itens, int n) //mochilaMelhor vai sendo enchida com o tempo
 {
-    if (mochilaAtual->valor > mochilaMelhor->valor)
+    if (indexItem == n) //caso base (acabou os itens a serem verificados)
     {
-        for (int i = 0; i < n; i++)
+        if(mochilaAtual->valor > mochilaMelhor->valor) //se a mochila atual for a nova melhor, bota ela como melhor
         {
-            mochilaMelhor->itensArmazenados[i] = mochilaAtual->itensArmazenados[i];
+            mochilaMelhor->valor = mochilaAtual->valor;
+            mochilaMelhor->peso = mochilaAtual->peso;
+            mochilaMelhor->nItensArmazenados = mochilaAtual->nItensArmazenados;
+            for (int i = 0; i < mochilaAtual->nItensArmazenados; i++)
+            {
+                mochilaMelhor->itensArmazenados[i] = mochilaAtual->itensArmazenados[i];
+            }
         }
-        mochilaMelhor->valor = mochilaAtual->valor;
+        return;
     }
-    if ((indexItem + 1 < n))
+    bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem + 1, itens, n); //recursao para o caso em que nao se escolhe o item
+    if (mochilaAtual->peso + get_peso(itens[indexItem]) <= mochilaAtual->pesoMax) //se for possivel adicionar o item, chama a recursao com o item incluido
     {
+        mochilaAtual->itensArmazenados[mochilaAtual->nItensArmazenados] = itens[indexItem];
+        mochilaAtual->peso += get_peso(itens[indexItem]);
+        mochilaAtual->valor += get_valor(itens[indexItem]);
+        mochilaAtual->nItensArmazenados++;
         bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem + 1, itens, n);
-        if ((mochilaAtual->peso + get_peso(itens[indexItem + 1]) <= mochilaMelhor->pesoMax))
-        {
-            mochilaAtual->itensArmazenados[mochilaAtual->nItensArmazenados + 1] = itens[indexItem];
-            mochilaAtual->valor += get_valor(itens[indexItem]);
-            mochilaAtual->peso += get_peso(itens[indexItem]);
-            bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem + 1, itens, n);
-        } 
+        mochilaAtual->nItensArmazenados--; //desfazekmos a adicao para nao afetar os outros ramos da recursao
+        mochilaAtual->peso -= get_peso(itens[indexItem]);
+        mochilaAtual->valor -= get_valor(itens[indexItem]);
     }
-    
-}
+}  
 
-MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n) 
+MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n)
 {
     clock_t inicio, fim; //marca de tempo
     double tempoExec; //marca o tempo de execução
     inicio = clock();
+    mochila->itensArmazenados = (ITEM**)malloc(sizeof(ITEM*) * n); //aloca meoria temporariamente para operar nos itens armazenados
+    if (mochila->itensArmazenados == NULL)
+    {
+        printf("Erro: Sem espaço para alocacao de memoria.\n");
+        return mochila; // Retorna a mochila vazia em caso de falha
+    }
     NOGULOSO noguloso[n];
     for (int i = 0; i < n; i++) //loop que cria o vetor de structs
     {
@@ -195,13 +208,13 @@ MOCHILA *guloso(ITEM **itens, MOCHILA *mochila, int n)
     int infInicial = 0;
     int supInicial = n - 1;
     quicksort(noguloso, infInicial, supInicial);
-    for (int i = 0; i < n; i++)//loop que percorre o vetor procurando a maior razao
+    for (int i = n - 1; i >= 0; i--)//percorre de tras pra frente pq o vetor foi ordenado em ordem crescente
     {
     /*nItensArmazenados é usado como indíce pois a quantidade de itens na mochila
     sempre sera igual ao index do item que estará sendo operado no momento*/
         if (mochila->pesoMax >= mochila->peso + get_peso(noguloso[i].item)) //verifica se o peso estoura o pesomax da mochila antes de adicionar o item
         {
-            mochila->itensArmazenados[i] = noguloso[i].item; //armazena o item na mochila
+            mochila->itensArmazenados[mochila->nItensArmazenados] = noguloso[i].item; //armazena o item na mochila
             mochila->valor+= get_valor(noguloso[i].item); //vai somando o valor total da mochila
             mochila->peso+= get_peso(noguloso[i].item); //vai somando o peso total da mochila
             mochila->nItensArmazenados += 1; //contador de itens dentro da mochila
