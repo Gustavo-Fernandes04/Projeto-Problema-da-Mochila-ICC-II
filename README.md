@@ -28,4 +28,4 @@ Gustavo de Faria Fernandes [Github: [Gustavo-Fernandes04](https://github.com/Gus
 
 Rafael Pavon Diesner [Github: [yspread](https://github.com/yspread)]
 
-# Relatorio - Analise do dos algoritmos
+# Relatorio - Análise do dos algoritmos
