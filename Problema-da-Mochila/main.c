@@ -159,6 +159,7 @@ MOCHILA *brute_force(ITEM **itens, int pesoMax, int n, int indexItem) //no inici
     mochilaAtual->nItensArmazenados = 0;
     mochilaAtual->itensArmazenados = (ITEM**) malloc (sizeof(ITEM*) * n);
     bruteforce_recursao(mochilaAtual, mochilaMelhor, indexItem, itens, n);
+    //libera a mochila atual, deixando apenas a melhor mochila
     free(mochilaAtual->itensArmazenados);
     free(mochilaAtual);
     fim = clock();
